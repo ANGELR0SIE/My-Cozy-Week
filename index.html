@@ -307,6 +307,7 @@ Wednesday:[
 "MEM",
 "medium",
 "Body Care",
+"Gardening",
 "Study(10th + degree)"
 ],
 
@@ -339,20 +340,64 @@ Saturday:[
 const daySelector = document.getElementById("daySelector");
 const todoContainer = document.getElementById("todoContainer");
 
+// function loadTodos(day){
+
+// const todos = weeklyTodos[day];
+
+// todoContainer.innerHTML = "";
+
+// todos.forEach((todo,index)=>{
+
+// const item = document.createElement("div");
+
+// item.className = "todo-item";
+
+// item.innerHTML = `
+// <input type="checkbox" onchange="checkCompletion()">
+// <span>${todo}</span>
+// `;
+
+// todoContainer.appendChild(item);
+
+// });
+
+// }
+
+// function checkCompletion(){
+
+// const checks = document.querySelectorAll("input[type='checkbox']");
+// const checked = document.querySelectorAll("input[type='checkbox']:checked");
+
+// if(checks.length === checked.length && checks.length > 0){
+// document.getElementById("popup").style.display="flex";
+// }
+
+// }
+
 function loadTodos(day){
 
 const todos = weeklyTodos[day];
-
 todoContainer.innerHTML = "";
 
+const savedState = JSON.parse(
+localStorage.getItem(`todos-${day}`)
+) || [];
+
 todos.forEach((todo,index)=>{
+
+const checked = savedState[index] || false;
 
 const item = document.createElement("div");
 
 item.className = "todo-item";
 
 item.innerHTML = `
-<input type="checkbox" onchange="checkCompletion()">
+<input
+type="checkbox"
+${checked ? "checked" : ""}
+onchange="checkCompletion()"
+data-index="${index}"
+>
 <span>${todo}</span>
 `;
 
@@ -364,15 +409,47 @@ todoContainer.appendChild(item);
 
 function checkCompletion(){
 
-const checks = document.querySelectorAll("input[type='checkbox']");
-const checked = document.querySelectorAll("input[type='checkbox']:checked");
+const day = daySelector.value;
 
-if(checks.length === checked.length && checks.length > 0){
+const checks = document.querySelectorAll(
+"input[type='checkbox']"
+);
+
+const states = [];
+
+checks.forEach(check=>{
+states.push(check.checked);
+});
+
+localStorage.setItem(
+`todos-${day}`,
+JSON.stringify(states)
+);
+
+const allChecked =
+states.length > 0 &&
+states.every(state => state);
+
+if(allChecked){
+
 document.getElementById("popup").style.display="flex";
-}
+
+setTimeout(()=>{
+
+const resetStates = states.map(()=>false);
+
+localStorage.setItem(
+`todos-${day}`,
+JSON.stringify(resetStates)
+);
+
+loadTodos(day);
+
+},500);
 
 }
 
+}
 function closePopup(){
 document.getElementById("popup").style.display="none";
 }
